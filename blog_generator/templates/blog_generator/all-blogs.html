@@ -1,0 +1,18 @@
+{% extends "blog/base.html" %}
+{% block content %}
+    <div class="content-section">
+        <h2 class="mb-4">Saved Blog Articles</h2>
+        <div>
+            {% for article in blog_articles reversed %}
+                <a class="article-title" href="/ai/blog-details/{{ article.id }}">
+                    <div class="content-section mb-3">
+                        <h5>{{ article.youtube_title }}</h5>
+                        <p class="text-muted">{{ article.content|truncatechars:100 }}</p>
+                    </div>
+                </a>
+            {% empty %}
+                <p class="text-muted">No blog articles generated yet. <a href="/ai/">Generate one now!</a></p>
+            {% endfor %}
+        </div>
+    </div>
+{% endblock content %}

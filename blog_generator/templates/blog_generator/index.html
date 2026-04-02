@@ -1,0 +1,86 @@
+{% extends "blog/base.html" %}
+{% block content %}
+    <div class="content-section">
+        <div class="text-center">
+            <h2 class="mb-4">Welcome to the AI Blog Generator</h2>
+            <p class="text-muted">Generate high-quality blog articles from YouTube videos using artificial intelligence. Simply enter the link to the YouTube video below and let the AI create the content for you!</p>
+        </div>
+
+        <br>
+
+        <div>
+            <h5 class="mb-3">Enter YouTube Video Link</h5>
+            <div class="input-group">
+                <input id="youtubelink" type="url" placeholder="Paste YouTube Link..." class="form-control">
+                <button id="generatedBlogButton" class="btn btn-outline-info">Generate</button>
+            </div>
+        </div>
+
+        <div id="loading-circle" style="display:none;" class="text-center mt-4">
+            <div class="spinner-border text-info" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+        </div>
+
+        <div class="mt-4">
+            <h5>Generated Blog Article</h5>
+            <div id="blogContent" class="text-muted mt-2"></div>
+        </div>
+
+        <div id="publishSection" style="display:none;" class="mt-4">
+            <hr>
+            <button id="publishBtn" class="btn btn-outline-success">Publish to Blog</button>
+        </div>
+    </div>
+
+    <script>
+        let generatedTitle = '';
+        let generatedContent = '';
+
+        document.getElementById('generatedBlogButton').addEventListener('click', async () => {
+            const youtubeLink = document.getElementById('youtubelink').value;
+            const blogContent = document.getElementById('blogContent');
+
+            if (youtubeLink) {
+                document.getElementById('loading-circle').style.display = 'block';
+                document.getElementById('publishSection').style.display = 'none';
+                blogContent.innerHTML = '';
+
+                try {
+                    const response = await fetch('/ai/generate-blog', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': '{{ csrf_token }}',
+                        },
+                        body: JSON.stringify({ link: youtubeLink })
+                    });
+
+                    const data = await response.json();
+
+                    if (data.content) {
+                        blogContent.innerHTML = data.content;
+                        generatedTitle = data.title || '';
+                        generatedContent = data.content;
+                        document.getElementById('publishSection').style.display = 'block';
+                    } else {
+                        blogContent.innerHTML = '<p class="text-danger">Failed to generate article. Please try again.</p>';
+                    }
+
+                } catch (error) {
+                    console.error("Error occurred:", error);
+                    alert("Something went wrong. Please try again later.");
+                }
+                document.getElementById('loading-circle').style.display = 'none';
+            } else {
+                alert("Please enter a YouTube link.");
+            }
+        });
+
+        document.getElementById('publishBtn').addEventListener('click', () => {
+            const title = encodeURIComponent(generatedTitle);
+            const content = encodeURIComponent(generatedContent);
+            window.location.href = `/post/new/?title=${title}&content=${content}`;
+        });
+    </script>
+{% endblock content %}

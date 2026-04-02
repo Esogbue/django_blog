@@ -4,13 +4,19 @@
         <article class="content-section">
             <div class="d-flex align-items-start">
                 <img class="rounded-circle article-img me-3" src="{{ post.author.profile.image.url }}">
-                <div>
+                <div style="width:100%">
                     <div class="article-metadata">
                         <a class="me-2" href="{% url 'user-posts' post.author.username %}">{{ post.author }}</a>
                         <small class="text-muted">{{ post.date_posted|date:"F d, Y" }}</small>
                     </div>
                     <h2><a class="article-title" href="{% url 'post-detail' post.id %}">{{ post.title }}</a></h2>
-                    <p class="article-content">{{ post.content }}</p>
+                    <div class="article-content" id="post-{{ post.id }}">
+                        <div class="post-preview">{{ post.content|truncatewords:60 }}</div>
+                        <div class="post-full" style="display:none;">{{ post.content }}</div>
+                        {% if post.content|wordcount > 60 %}
+                            <a href="#" class="text-info see-more-btn" data-id="{{ post.id }}">See More</a>
+                        {% endif %}
+                    </div>
                 </div>
             </div>
         </article>
@@ -36,4 +42,25 @@
         {% endif %}
 
     {% endif %}
+
+    <script>
+        document.querySelectorAll('.see-more-btn').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                e.preventDefault();
+                const id = this.getAttribute('data-id');
+                const preview = document.querySelector(`#post-${id} .post-preview`);
+                const full = document.querySelector(`#post-${id} .post-full`);
+
+                if (full.style.display === 'none') {
+                    preview.style.display = 'none';
+                    full.style.display = 'block';
+                    this.textContent = 'See Less';
+                } else {
+                    preview.style.display = 'block';
+                    full.style.display = 'none';
+                    this.textContent = 'See More';
+                }
+            });
+        });
+    </script>
 {% endblock content %}

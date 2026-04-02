@@ -39,6 +39,12 @@ class PostCreateView(LoginRequiredMixin, CreateView):
     model = Post
     fields = ['title', 'content']
 
+    def get_initial(self):
+        initial = super().get_initial()
+        initial['title'] = self.request.GET.get('title', '')
+        initial['content'] = self.request.GET.get('content', '')
+        return initial
+
     def form_valid(self, form):
         form.instance.author = self.request.user
         return super().form_valid(form)
